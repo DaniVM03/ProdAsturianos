@@ -1,5 +1,5 @@
 /*Fichero donde se emplean las librerías, los servicios 
-    y donde usa el método listen para escuchar las conexiones*/
+y donde usa el método listen para escuchar las conexiones*/
 const express=require('express');
 const productos=__dirname+"/productos.json";
 const utils=require(__dirname+'/fichero_utils.js');
