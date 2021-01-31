@@ -1,0 +1,20 @@
+{% extends "admin_base.njk" %}
+{% block titulo %}Productos | Lista{% endblock %}
+{% block contenido %}
+    <div>
+        <ul class="list-group">
+        {% for producto in productos %}
+            <li class="list-group-item">
+            {{ producto.nombre }}</li>
+            <form action="/admin/{{ producto.id }}" method="post">
+                <input type="hidden" name="_method" value="delete" />
+                <button type="submit" class="btn btn-danger w-100">Borrar</button>
+            </form>
+            <a class="btn btn-primary" href="/admin/editar/{{ producto.id }}">Editar producto</a>
+            <br>
+        {% else %}
+            <li>No hay productos que mostrar.</li>
+        {% endfor %}
+        </ul>        
+    </div>
+{% endblock %}

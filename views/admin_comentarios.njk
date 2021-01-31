@@ -1,0 +1,14 @@
+{% extends "admin_base.njk" %}
+{% block titulo %}Productos | Nuevo Comentario{% endblock %}
+{% block contenido %}
+  <h1>Añadir un comentario</h1>
+    <form action="/admin/comentarios/{{ producto.id }}" method="post">
+        <div class="form-group">
+            <label for="comentario">Comentario:</label>
+            <input type="text" class="form-control" name="comentario"/>
+        </div>
+        <button type="submit" class="btn btn-primary">
+            Enviar
+        </button>
+    </form>
+{% endblock %}

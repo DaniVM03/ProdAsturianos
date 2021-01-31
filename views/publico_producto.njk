@@ -1,0 +1,47 @@
+{% extends "publico_base.njk" %}
+{% block titulo %}Productos | Ficha{% endblock %}
+{% block contenido %}
+    <div class="row">
+        <div class="col-3">
+            <img width=150 src="/public/uploads/{{ producto.imagen }}">
+        </div>
+        <div class="col-9">
+            <p><h2>{{ producto.nombre }}</h2></p>
+            <p><strong>Precio:</strong> {{ producto.precio }} €</p>
+            <p><strong>Descripción:</strong> {{ producto.descripcion }}</p>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-8">
+            <p><h3>Comentarios</h3></p>
+        </div>
+        {% if (session and session.usuario) %}
+            <div class="col-4">
+            <br>
+                <a href="/admin/comentario/nuevo/{{ producto.id }}" type="button" class="btn btn-primary">Añadir un comentario</a>
+            </div>
+        {% endif %}
+    </div>
+    <div class="row">
+        <div class="col-12">
+        {% if producto.comentarios.length>0 %}
+            {% for comentario in producto.comentarios %}
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title">{{ comentario.nickname }}</h4>
+                    <p class="card-text">{{ comentario.comentario }}</p>
+                    {% if (comentario.nickname===session.usuario)%}
+                        <form action="/admin/comentarios/{{ producto.id }}/{{ comentario.id }}" method="post">
+                            <input type="hidden" name="_method" value="delete" />
+                            <button type="submit" class="btn btn-danger w-100">Borrar</button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p>No hay comentarios</p>
+        {% endif %}
+        </div>
+    </div>
+{% endblock %}

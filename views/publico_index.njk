@@ -1,0 +1,24 @@
+{% extends "publico_base.njk" %}
+{% block titulo %}Productos | Inico{% endblock %}
+{% block contenido %}
+    <h1 class="h1">Inicio</h1>
+    <div>
+        <form action="/buscar" method="post">
+            <input type="text" name="texto"/>
+            <button type="submit" class="btn btn-primary">Buscar</button>
+        </form>
+        <br>
+        <ul class="list-group">
+        {% if mensaje %}
+            <li class="list-group-item">No se han encontrado productos</li>
+        {% endif %}
+        {% if productos %}
+            {% for producto in productos %}
+                <li class="list-group-item">
+                    <a href="/producto/{{ producto.id }}">{{ producto.nombre }}</a>
+                </li>
+            {% endfor %}
+        {% endif %}
+        </ul>        
+    </div>
+{% endblock %}

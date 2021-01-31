@@ -1,95 +1,62 @@
-/*Fichero donde se emplean las librerías, los servicios 
-y donde usa el método listen para escuchar las conexiones*/
-const express=require('express');
-const productos=__dirname+"/productos.json";
-const utils=require(__dirname+'/fichero_utils.js');
+//Librerías
+const express = require('express');
+const mongoose = require('mongoose');
+const bodyParser = require('body-parser');
+const nunjucks = require('nunjucks');
+const methodOverride = require('method-override');
+const session = require('express-session');
 
+//Enrutadores
+const productos = require(__dirname + '/routes/productos');
+const auth = require(__dirname + '/routes/auth');
+const publico = require(__dirname + '/routes/publico');
 
-let array=utils.cargarProductos(productos);
-let app=express();
-app.use(express.json());
+// Conexión con la BD
+mongoose.connect(
+    'mongodb://localhost:27017/prodAsturianosV3', 
+    {useNewUrlParser:true, useUnifiedTopology:true}
+);
+
+// Servidor Express
+let app = express();
+
+// Configuracion de las sesiones
+app.use(session({
+    secret: '1234',
+    resave: true,
+    saveUninitialized: false,
+    expires: new Date(Date.now() + (30 * 60 * 1000))
+}));
+app.use((req, res, next) => {
+    res.locals.session = req.session;
+    next();
+});
+
+// Motor de plantillas nunjucks
+nunjucks.configure('views', {
+    autoescape: true,
+    express: app
+});
+app.set('view engine', 'njk');
+
+// Middleware body-parser para peticiones POST y PUT
+// Enrutadores para cada grupo de rutas
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded());
+app.use(methodOverride(function (req, res) {
+    if (req.body && typeof req.body === 'object'
+          && '_method' in req.body) {
+        let method = req.body._method;
+        delete req.body._method;
+        return method;
+    }
+}));
+
+app.use('/public', express.static(__dirname + '/public'));
+app.use(express.static(__dirname + '/node_modules/bootstrap/dist'));
+app.use('/', publico);
+app.use('/admin', productos);
+app.use('/auth', auth);
+
+// Puesta en marcha del servidor
 app.listen(8080);
-
-app.get('/productos',(req,res)=>{
-    if (array.length !== 0) {
-        res.status(200).send({ok:true,resultado: array});
-    } 
-    else {
-        res.status(500).send({ok: false,
-        error: "No se encontraron productos"});
-    }
-});
-
-app.get('/productos/:id',(req,res)=>{
-    let resultado= array.filter(
-        producto=>producto.id==req.params['id']
-    );
-    if (resultado.length!==0) {
-        res.status(200).send({ok: true, 
-            resultado: resultado});
-    } 
-    else {
-        res.status(400).send({ok: false,
-            error: "Producto no encontrado"});
-    }
-});
-
-app.post('/productos',(req,res)=>{
-    let nuevoProducto = {
-        id: req.body.id,
-        nombre: req.body.nombre,
-        descripcion: req.body.descripcion,
-        precio: req.body.precio
-    };
-    let existe = array.filter(
-        producto => producto.id == req.body.id
-    );
-    if (existe.length == 0) {
-        array.push(nuevoProducto);
-        res.status(200).send({ok: true,
-            resultado: nuevoProducto});
-    } 
-    else {
-        res.status(400).send({ok: false,
-            error: "Código repetido"});
-    }
-    utils.guardarProductos(productos,array);
-});
-
-app.put('/productos/:id',(req,res)=>{
-    let existe = array.filter(
-        producto=>producto.id==req.params['id']
-    );
-    if (existe.length > 0) {
-        let producto= existe[0];
-        producto.nombre= req.body.nombre;
-        producto.descripcion= req.body.descripcion;
-        producto.precio= req.body.precio;
-        res.status(200).send({ok: true,
-            resultado:producto});
-    } 
-    else {
-        res.status(400).send({ok: false,
-            error: "Producto no encontrado"});
-    }
-    utils.guardarProductos(productos,array);
-});
-
-app.delete('/productos/:id',(req, res)=>{
-    let filtrado = array.filter(
-        producto => producto.id != req.params['id']
-    );
-    let productoBorrado=array.filter(
-        producto => producto.id == req.params['id']
-    );
-    if (filtrado.length !== array.length) {
-        array = filtrado;
-        res.status(200).send({ok: true,
-            resultado: productoBorrado});
-    } 
-    else {
-        res.status(400).send({ok: false,
-            error: "Producto no encontrado"});
-    }
-    utils.guardarProductos(productos,array);
-});
